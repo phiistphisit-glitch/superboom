@@ -4,334 +4,499 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>superboom — Thai Printing Plugin for Claude Code</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
     :root {
-      --bg: #0d1117;
-      --bg2: #161b22;
-      --bg3: #21262d;
-      --border: #30363d;
-      --text: #e6edf3;
-      --muted: #8b949e;
-      --orange: #f5a623;
-      --orange2: #e8962a;
-      --blue: #58a6ff;
-      --green: #3fb950;
-      --purple: #bc8cff;
-      --red: #f85149;
-      --yellow: #e3b341;
+      --bg: #0a0a0f;
+      --surface: rgba(255,255,255,0.04);
+      --surface-hover: rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.08);
+      --border-hover: rgba(255,255,255,0.18);
+      --text: #ffffff;
+      --muted: rgba(255,255,255,0.5);
+      --subtle: rgba(255,255,255,0.3);
+      --p1: #8b5cf6;
+      --p2: #a78bfa;
+      --p3: #c4b5fd;
+      --pink: #ec4899;
+      --blue: #3b82f6;
+      --cyan: #06b6d4;
+      --green: #10b981;
+      --orange: #f59e0b;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans Thai', sans-serif;
+      font-family: 'Inter', -apple-system, sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.6;
+      overflow-x: hidden;
     }
-    a { color: var(--blue); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+
+    /* Background blobs */
+    .bg-blobs {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(100px); opacity: 0.15;
+    }
+    .blob-1 { width: 600px; height: 600px; background: var(--p1); top: -200px; left: -100px; }
+    .blob-2 { width: 500px; height: 500px; background: var(--pink); top: 200px; right: -150px; opacity: 0.1; }
+    .blob-3 { width: 400px; height: 400px; background: var(--blue); bottom: 100px; left: 30%; opacity: 0.08; }
+
+    /* Layout */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
 
     /* Nav */
     nav {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(13,17,23,0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 24px;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 16px 0;
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto; padding: 0 24px;
       display: flex; align-items: center; justify-content: space-between;
+      background: rgba(10,10,15,0.7);
+      backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 20px;
     }
-    .nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.1rem; }
-    .nav-logo .logo-icon {
-      width: 32px; height: 32px; border-radius: 8px;
-      background: linear-gradient(135deg, var(--orange), #ff6b35);
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 1rem; letter-spacing: -0.3px;
+    }
+    .logo-mark {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--p1), var(--pink));
       display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
+      font-size: 15px; box-shadow: 0 0 20px rgba(139,92,246,0.4);
     }
-    .nav-links { display: flex; gap: 20px; }
-    .nav-links a { color: var(--muted); font-size: 0.9rem; }
-    .nav-links a:hover { color: var(--text); text-decoration: none; }
-    .badge {
-      background: var(--bg3); border: 1px solid var(--border);
-      border-radius: 20px; padding: 4px 12px; font-size: 0.75rem; color: var(--muted);
-      display: flex; align-items: center; gap: 6px;
+    .nav-center { display: flex; gap: 4px; }
+    .nav-link {
+      padding: 6px 14px; border-radius: 8px; font-size: 0.875rem;
+      color: var(--muted); text-decoration: none; transition: all 0.2s;
     }
-    .badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+    .nav-link:hover { color: var(--text); background: var(--surface); }
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+    .btn-ghost {
+      padding: 7px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 500;
+      color: var(--muted); text-decoration: none; transition: all 0.2s; border: 1px solid transparent;
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--border); }
+    .btn-pill {
+      padding: 7px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+      background: white; color: #0a0a0f; text-decoration: none; transition: all 0.2s;
+    }
+    .btn-pill:hover { background: rgba(255,255,255,0.9); transform: translateY(-1px); }
 
     /* Hero */
     .hero {
-      text-align: center;
-      padding: 80px 24px 60px;
-      background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(245,166,35,0.12), transparent);
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 120px 24px 80px;
+      position: relative; z-index: 1;
     }
-    .hero-tag {
+    .hero-badge {
       display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.3);
-      border-radius: 20px; padding: 6px 16px; font-size: 0.8rem; color: var(--orange);
+      background: rgba(139,92,246,0.12);
+      border: 1px solid rgba(139,92,246,0.25);
+      border-radius: 100px; padding: 6px 14px 6px 8px;
+      font-size: 0.78rem; color: var(--p3); margin-bottom: 32px;
+      cursor: default;
+    }
+    .hero-badge .badge-dot {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--p1), var(--pink));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+    }
+    .hero-badge span { font-weight: 500; }
+
+    h1 {
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      font-weight: 900;
+      letter-spacing: -2px;
+      line-height: 1.1;
       margin-bottom: 24px;
     }
-    h1 {
-      font-size: clamp(2rem, 5vw, 3.5rem);
-      font-weight: 800; letter-spacing: -1px;
-      background: linear-gradient(135deg, #fff 0%, var(--orange) 60%);
+    .gradient-text {
+      background: linear-gradient(135deg, #fff 0%, var(--p3) 50%, var(--pink) 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
-      margin-bottom: 16px;
     }
-    .hero-sub {
-      font-size: 1.1rem; color: var(--muted); max-width: 600px; margin: 0 auto 32px;
+    .hero-desc {
+      font-size: 1.1rem; color: var(--muted); max-width: 520px;
+      margin: 0 auto 40px; line-height: 1.7; font-weight: 400;
     }
-    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-    .btn {
-      padding: 10px 24px; border-radius: 8px; font-size: 0.95rem;
-      cursor: pointer; border: none; font-weight: 600;
+    .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
       display: inline-flex; align-items: center; gap: 8px;
-      transition: transform 0.15s, opacity 0.15s;
+      padding: 12px 28px; border-radius: 12px; font-size: 0.95rem; font-weight: 600;
+      background: linear-gradient(135deg, var(--p1), var(--pink));
+      color: white; text-decoration: none; border: none; cursor: pointer;
+      transition: all 0.2s; box-shadow: 0 4px 24px rgba(139,92,246,0.35);
     }
-    .btn:hover { transform: translateY(-1px); opacity: 0.9; text-decoration: none; }
-    .btn-primary { background: var(--orange); color: #000; }
-    .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(139,92,246,0.45); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px; border-radius: 12px; font-size: 0.95rem; font-weight: 500;
+      background: var(--surface); color: var(--text); text-decoration: none;
+      border: 1px solid var(--border); cursor: pointer; transition: all 0.2s;
+    }
+    .btn-secondary:hover { background: var(--surface-hover); border-color: var(--border-hover); transform: translateY(-1px); }
 
-    /* Terminal demo */
-    .terminal-wrap { max-width: 700px; margin: 48px auto 0; }
-    .terminal {
-      background: #0a0c10; border: 1px solid var(--border); border-radius: 12px;
-      overflow: hidden; text-align: left;
+    /* Hero visual */
+    .hero-visual {
+      margin-top: 60px; width: 100%; max-width: 780px;
+      position: relative;
     }
-    .terminal-bar {
-      background: var(--bg3); padding: 10px 16px;
+    .card-glow {
+      position: absolute; inset: -1px; border-radius: 21px;
+      background: linear-gradient(135deg, rgba(139,92,246,0.4), rgba(236,72,153,0.2), transparent 60%);
+      z-index: 0;
+    }
+    .terminal-card {
+      position: relative; z-index: 1;
+      background: rgba(15,15,22,0.95);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px; overflow: hidden;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07);
+    }
+    .terminal-top {
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
       display: flex; align-items: center; gap: 8px;
     }
-    .terminal-bar span { width: 12px; height: 12px; border-radius: 50%; }
-    .terminal-bar .r { background: #ff5f56; }
-    .terminal-bar .y { background: #ffbd2e; }
-    .terminal-bar .g { background: #27c93f; }
-    .terminal-title { margin-left: 8px; font-size: 0.8rem; color: var(--muted); }
-    .terminal-body { padding: 20px 24px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; line-height: 1.9; }
-    .cmd { color: var(--blue); }
-    .arg { color: var(--orange); }
-    .out { color: var(--green); }
-    .muted { color: var(--muted); }
-    .cmt { color: #6a737d; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #febc2e; }
+    .dot-g { background: #28c840; }
+    .win-title { margin-left: auto; font-size: 0.78rem; color: var(--muted); }
+    .terminal-body {
+      padding: 20px 24px;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.82rem; line-height: 2;
+    }
+    .t-prompt { color: rgba(139,92,246,0.7); }
+    .t-cmd { color: #a78bfa; font-weight: 600; }
+    .t-arg { color: #fbbf24; }
+    .t-out { color: #d1fae5; }
+    .t-num { color: #60a5fa; }
+    .t-label { color: var(--muted); }
+    .t-total { color: white; font-weight: 700; }
+    .t-warn { color: #f87171; }
+    .t-ok { color: #34d399; }
+    .t-hint { color: rgba(139,92,246,0.6); font-style: italic; }
 
     /* Section */
-    section { padding: 60px 24px; max-width: 1100px; margin: 0 auto; }
-    .section-label {
-      font-size: 0.75rem; font-weight: 700; letter-spacing: 2px;
-      text-transform: uppercase; color: var(--orange); margin-bottom: 8px;
+    section { padding: 80px 0; position: relative; z-index: 1; }
+    .section-eyebrow {
+      font-size: 0.78rem; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, var(--p2), var(--pink));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
     }
-    h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; }
-    .section-desc { color: var(--muted); max-width: 600px; margin-bottom: 40px; }
-    .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+    h2 {
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 800; letter-spacing: -1px; margin-bottom: 12px;
+    }
+    .section-sub { color: var(--muted); font-size: 1rem; max-width: 520px; margin-bottom: 48px; }
 
-    /* Skills grid */
-    .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    /* Skills */
+    .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
     .skill-card {
-      background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
-      padding: 24px; transition: border-color 0.2s, transform 0.2s;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 24px; transition: all 0.25s; cursor: default;
+      position: relative; overflow: hidden;
     }
-    .skill-card:hover { border-color: var(--orange); transform: translateY(-2px); }
+    .skill-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--card-color, var(--p1)), transparent 60%);
+      opacity: 0; transition: opacity 0.3s; border-radius: 16px;
+    }
+    .skill-card:hover { border-color: var(--border-hover); transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.3); }
+    .skill-card:hover::before { opacity: 0.06; }
     .skill-icon {
-      width: 44px; height: 44px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px; margin-bottom: 14px;
+      width: 44px; height: 44px; border-radius: 12px; margin-bottom: 16px;
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
     }
-    .skill-cmd { font-family: monospace; color: var(--orange); font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
-    .skill-title { font-weight: 600; margin-bottom: 8px; }
-    .skill-desc { color: var(--muted); font-size: 0.875rem; }
+    .skill-slash {
+      font-family: 'SF Mono', monospace; font-size: 0.85rem; font-weight: 700;
+      color: var(--p2); margin-bottom: 6px;
+    }
+    .skill-name { font-weight: 700; font-size: 1rem; margin-bottom: 8px; }
+    .skill-desc { font-size: 0.83rem; color: var(--muted); line-height: 1.6; }
     .skill-example {
-      margin-top: 12px; background: var(--bg3); border-radius: 6px;
-      padding: 10px 12px; font-family: monospace; font-size: 0.78rem; color: #79c0ff;
+      margin-top: 14px; padding: 8px 12px;
+      background: rgba(0,0,0,0.3); border-radius: 8px;
+      font-family: monospace; font-size: 0.75rem; color: var(--p3);
+      border: 1px solid rgba(139,92,246,0.15);
     }
 
-    /* Pricing table */
-    .table-wrap { overflow-x: auto; }
-    table {
-      width: 100%; border-collapse: collapse; font-size: 0.875rem;
+    /* Divider */
+    .divider { border: none; border-top: 1px solid var(--border); }
+
+    /* Pricing */
+    .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 700px) { .pricing-grid { grid-template-columns: 1fr; } }
+    .price-group {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      overflow: hidden;
     }
-    th {
-      background: var(--bg3); color: var(--muted); font-weight: 600;
-      text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border);
-      white-space: nowrap;
+    .price-group-header {
+      padding: 14px 20px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.78rem; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--muted);
+      display: flex; align-items: center; gap: 8px;
     }
-    td { padding: 10px 14px; border-bottom: 1px solid rgba(48,54,61,0.6); }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(255,255,255,0.02); }
-    .tag {
-      display: inline-block; padding: 2px 8px; border-radius: 4px;
-      font-size: 0.75rem; font-weight: 600;
-    }
-    .tag-green { background: rgba(63,185,80,0.15); color: var(--green); }
-    .tag-orange { background: rgba(245,166,35,0.15); color: var(--orange); }
-    .tag-blue { background: rgba(88,166,255,0.15); color: var(--blue); }
-    .tag-purple { background: rgba(188,140,255,0.15); color: var(--purple); }
+    .price-row { padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.875rem; }
+    .price-row:last-child { border-bottom: none; }
+    .price-row:hover { background: var(--surface-hover); }
+    .price-item { color: var(--text); }
+    .price-val { color: var(--p3); font-weight: 600; font-family: monospace; font-size: 0.82rem; }
 
     /* Tiers */
-    .tiers { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 24px; }
-    .tier {
-      flex: 1; min-width: 100px;
-      background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
-      padding: 16px 12px; text-align: center;
+    .tiers-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 32px; }
+    @media (max-width: 600px) { .tiers-row { grid-template-columns: repeat(3, 1fr); } }
+    .tier-cell {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px 10px; text-align: center; transition: all 0.2s;
     }
-    .tier-qty { font-weight: 700; font-size: 1rem; color: var(--text); }
-    .tier-label { font-size: 0.75rem; color: var(--muted); margin: 4px 0; }
-    .tier-mult { font-size: 1.2rem; font-weight: 800; }
+    .tier-cell:hover { border-color: var(--border-hover); background: var(--surface-hover); }
+    .tier-qty { font-weight: 700; font-size: 0.85rem; margin-bottom: 4px; }
+    .tier-save { font-size: 0.72rem; color: var(--muted); margin-bottom: 6px; }
+    .tier-mult { font-weight: 800; font-size: 1.1rem; }
 
     /* Install */
-    .install-box {
-      background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
-      padding: 28px 32px;
+    .install-wrapper {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+      overflow: hidden;
     }
-    .install-step { display: flex; gap: 16px; margin-bottom: 20px; }
-    .step-num {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: rgba(245,166,35,0.2); border: 1px solid rgba(245,166,35,0.4);
-      color: var(--orange); font-weight: 700; font-size: 0.8rem;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    .install-header {
+      padding: 20px 28px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
     }
-    .step-body h4 { font-size: 0.95rem; margin-bottom: 6px; }
-    .code-inline {
-      background: var(--bg3); border: 1px solid var(--border); border-radius: 6px;
-      padding: 10px 14px; font-family: monospace; font-size: 0.83rem;
-      color: var(--blue); margin-top: 6px; overflow-x: auto;
+    .install-header h3 { font-size: 1rem; font-weight: 600; }
+    .install-body { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+    .step-row { display: flex; gap: 16px; align-items: flex-start; }
+    .step-badge {
+      width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--p1), var(--pink));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 800; color: white;
+    }
+    .step-content h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; }
+    .step-content p { font-size: 0.83rem; color: var(--muted); margin-bottom: 10px; }
+    .code-block {
+      background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px; padding: 14px 18px;
+      font-family: 'SF Mono', monospace; font-size: 0.78rem;
+      color: var(--p3); line-height: 1.8; overflow-x: auto;
     }
 
-    /* AI section */
-    .ai-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-    .ai-card {
-      background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
-      padding: 20px;
+    /* News */
+    .news-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+    .news-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 22px; transition: all 0.25s;
     }
-    .ai-card h4 { margin-bottom: 8px; font-size: 0.95rem; }
-    .ai-card p { color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
-    .ai-card .date { font-size: 0.75rem; color: var(--muted); margin-bottom: 8px; }
-    .ai-card .source { font-size: 0.75rem; color: var(--orange); margin-top: 10px; }
+    .news-card:hover { border-color: var(--border-hover); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.25); }
+    .news-chip {
+      display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .chip-purple { background: rgba(139,92,246,0.15); color: var(--p3); }
+    .chip-pink { background: rgba(236,72,153,0.12); color: #f9a8d4; }
+    .chip-blue { background: rgba(59,130,246,0.12); color: #93c5fd; }
+    .chip-green { background: rgba(16,185,129,0.12); color: #6ee7b7; }
+    .chip-orange { background: rgba(245,158,11,0.12); color: #fcd34d; }
+    .news-card h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+    .news-card p { font-size: 0.83rem; color: var(--muted); line-height: 1.6; }
 
     /* Footer */
     footer {
+      padding: 48px 0 32px; text-align: center;
+      position: relative; z-index: 1;
       border-top: 1px solid var(--border);
-      padding: 32px 24px; text-align: center;
-      color: var(--muted); font-size: 0.85rem;
     }
-    footer strong { color: var(--text); }
+    .footer-logo { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px; }
+    .footer-text { color: var(--muted); font-size: 0.83rem; margin-bottom: 16px; }
+    .footer-links { display: flex; gap: 24px; justify-content: center; }
+    .footer-links a { color: var(--muted); font-size: 0.83rem; text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--text); }
 
-    /* Pulse animation */
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
-    .pulse { animation: pulse 2s infinite; }
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate { animation: fadeUp 0.6s ease forwards; }
+    .delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .delay-2 { animation-delay: 0.2s; opacity: 0; }
+    .delay-3 { animation-delay: 0.35s; opacity: 0; }
+    .delay-4 { animation-delay: 0.5s; opacity: 0; }
 
-    @media (max-width: 600px) {
-      .nav-links { display: none; }
-      h1 { font-size: 1.8rem; }
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(139,92,246,0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(139,92,246,0); }
+      100% { box-shadow: 0 0 0 0 rgba(139,92,246,0); }
+    }
+    .pulse-ring { animation: pulse-ring 2.5s infinite; }
+
+    @media (max-width: 768px) {
+      .nav-center { display: none; }
+      .hero { padding-top: 100px; }
+      h1 { letter-spacing: -1px; }
     }
   </style>
 </head>
 <body>
 
+<!-- Background -->
+<div class="bg-blobs">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
 <!-- Nav -->
 <nav>
-  <div class="nav-logo">
-    <div class="logo-icon">🖨️</div>
-    <span>superboom</span>
-  </div>
-  <div class="nav-links">
-    <a href="#skills">Skills</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#install">ติดตั้ง</a>
-    <a href="#ai-news">AI News</a>
-    <a href="https://github.com/phiistphisit-glitch/superboom">GitHub</a>
-  </div>
-  <div class="badge">
-    <span class="dot pulse"></span>
-    Claude Code Plugin
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <div class="logo-mark pulse-ring">🖨️</div>
+      <span>superboom</span>
+    </div>
+    <div class="nav-center">
+      <a href="#skills" class="nav-link">Skills</a>
+      <a href="#pricing" class="nav-link">Pricing</a>
+      <a href="#install" class="nav-link">Install</a>
+      <a href="#news" class="nav-link">AI News</a>
+    </div>
+    <div class="nav-right">
+      <a href="https://github.com/phiistphisit-glitch/superboom" class="btn-ghost">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+      <a href="#install" class="btn-pill">Get started →</a>
+    </div>
   </div>
 </nav>
 
 <!-- Hero -->
 <div class="hero">
-  <div class="hero-tag">
-    <span>🤖</span> Claude Code × โรงพิมพ์ไทย
+  <div class="hero-badge animate delay-1">
+    <div class="badge-dot">✦</div>
+    <span>Claude Code Plugin · โรงพิมพ์ไทย</span>
   </div>
-  <h1>superboom</h1>
-  <p class="hero-sub">
-    Plugin Claude Code สำหรับโรงพิมพ์ — คำนวณราคา วิเคราะห์ต้นทุน ตรวจ spec ไฟล์<br>
-    รองรับ Offset &amp; Gravure Printing · หน่วย ฿ THB
+
+  <h1 class="animate delay-2">
+    คำนวณราคางานพิมพ์<br>
+    <span class="gradient-text">ด้วย AI ทันที</span>
+  </h1>
+
+  <p class="hero-desc animate delay-3">
+    Plugin สำหรับโรงพิมพ์ — ใบเสนอราคา วิเคราะห์ต้นทุน ตรวจ spec ไฟล์<br>
+    รองรับ Offset &amp; Gravure · หน่วย ฿ THB · ตอบภาษาไทย
   </p>
-  <div class="hero-actions">
-    <a href="#install" class="btn btn-primary">🚀 ติดตั้งเลย</a>
-    <a href="https://github.com/phiistphisit-glitch/superboom" class="btn btn-secondary">
+
+  <div class="hero-cta animate delay-4">
+    <a href="#install" class="btn-primary">
+      เริ่มใช้งาน
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+    <a href="https://github.com/phiistphisit-glitch/superboom" class="btn-secondary">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-      GitHub
+      View on GitHub
     </a>
   </div>
 
   <!-- Terminal -->
-  <div class="terminal-wrap">
-    <div class="terminal">
-      <div class="terminal-bar">
-        <span class="r"></span><span class="y"></span><span class="g"></span>
-        <span class="terminal-title">claude — superboom</span>
+  <div class="hero-visual animate delay-4">
+    <div class="card-glow"></div>
+    <div class="terminal-card">
+      <div class="terminal-top">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <span class="win-title">claude — superboom</span>
       </div>
       <div class="terminal-body">
-        <div><span class="cmt"># คำนวณราคานามบัตร</span></div>
-        <div><span class="muted">$ </span><span class="cmd">/quote</span> <span class="arg">นามบัตร Art Card 350gsm 4สี UV 1000 ชิ้น ส่งกทม</span></div>
-        <div class="out">📋 ใบเสนอราคา QT-2026001</div>
-        <div class="out">━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
-        <div class="out">กระดาษ Art Card 350gsm    ฿ 485</div>
-        <div class="out">พิมพ์ 4สี CMYK (×0.85)    ฿ 1,105</div>
-        <div class="out">Plate offset 4สี 1ด้าน    ฿ 1,800</div>
-        <div class="out">UV coating 1,000 ชิ้น     ฿ 600</div>
-        <div class="out">ส่ง กทม.                  ฿ 250</div>
-        <div class="out">Overhead 18%              ฿ 726</div>
-        <div class="out">Margin 30%               ฿ 1,714</div>
-        <div class="out">VAT 7%                   ฿ 474</div>
-        <div class="out">━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
-        <div class="out">รวมทั้งสิ้น              ฿ 7,154</div>
-        <div class="out">ราคาต่อชิ้น              ฿ 7.15</div>
+        <div><span class="t-hint"># สั่งใบเสนอราคาได้เลย</span></div>
+        <div><span class="t-prompt">❯ </span><span class="t-cmd">/quote</span> <span class="t-arg">นามบัตร Art Card 350gsm 4สี UV 1,000 ชิ้น ส่งกทม</span></div>
         <div>&nbsp;</div>
-        <div><span class="muted">$ </span><span class="cmd">/spec</span> <span class="arg">RGB 72dpi PDF ไม่มี bleed</span></div>
-        <div><span style="color:#f85149">❌ [2] Color Mode: RGB → ต้องแปลงเป็น CMYK</span></div>
-        <div><span style="color:#f85149">❌ [1] Resolution: 72dpi → ต้องเป็น 300dpi ขึ้นไป</span></div>
-        <div><span style="color:#f85149">❌ [3] Bleed: ไม่มี → เพิ่ม 3mm ทุกด้าน</span></div>
-        <div><span style="color:#e3b341">⚠️ ต้องแก้ไข 3 รายการก่อนส่งงาน</span></div>
+        <div><span class="t-out">📋  ใบเสนอราคา  QT-2026-001</span></div>
+        <div><span class="t-label">─────────────────────────────────────────</span></div>
+        <div><span class="t-label">กระดาษ Art Card 350gsm        </span><span class="t-num">฿    485</span></div>
+        <div><span class="t-label">พิมพ์ 4สี CMYK (×0.85 tier)  </span><span class="t-num">฿  1,105</span></div>
+        <div><span class="t-label">Offset Plate 4สี 1ด้าน        </span><span class="t-num">฿  1,800</span></div>
+        <div><span class="t-label">UV coating 1,000 ชิ้น         </span><span class="t-num">฿    600</span></div>
+        <div><span class="t-label">ค่าขนส่ง กทม.                  </span><span class="t-num">฿    250</span></div>
+        <div><span class="t-label">Overhead 18%                   </span><span class="t-num">฿    726</span></div>
+        <div><span class="t-label">Margin 30%                     </span><span class="t-num">฿  1,714</span></div>
+        <div><span class="t-label">VAT 7%                         </span><span class="t-num">฿    474</span></div>
+        <div><span class="t-label">─────────────────────────────────────────</span></div>
+        <div><span class="t-total">รวมทั้งสิ้น                    ฿  7,154</span></div>
+        <div><span class="t-total">ราคาต่อชิ้น                    ฿   7.15</span></div>
+        <div>&nbsp;</div>
+        <div><span class="t-prompt">❯ </span><span class="t-cmd">/spec</span> <span class="t-arg">RGB 72dpi PDF ไม่มี bleed fonts ไม่ embed</span></div>
+        <div><span class="t-warn">❌  Resolution: 72dpi → ต้องเป็น 300dpi+</span></div>
+        <div><span class="t-warn">❌  Color Mode: RGB → ต้องแปลงเป็น CMYK</span></div>
+        <div><span class="t-warn">❌  Bleed: ไม่มี → เพิ่ม 3mm ทุกด้าน</span></div>
+        <div><span class="t-ok">✅  File Format: PDF ✓</span></div>
+        <div><span class="t-warn">⚠️  ต้องแก้ไข 3 รายการก่อนส่งงาน</span></div>
       </div>
     </div>
   </div>
 </div>
 
-<hr class="divider">
-
 <!-- Skills -->
 <section id="skills">
-  <p class="section-label">Skills</p>
-  <h2>4 Slash Commands</h2>
-  <p class="section-desc">พิมพ์คำสั่งใน Claude Code เพื่อเรียก AI ช่วยคำนวณทันที</p>
+  <div class="container">
+    <div class="section-eyebrow">Skills</div>
+    <h2>4 Slash Commands</h2>
+    <p class="section-sub">พิมพ์คำสั่งใน Claude Code — AI คำนวณและวิเคราะห์ให้ทันที</p>
 
-  <div class="skills-grid">
-    <div class="skill-card">
-      <div class="skill-icon" style="background:rgba(245,166,35,0.15)">💰</div>
-      <div class="skill-cmd">/quote</div>
-      <div class="skill-title">ใบเสนอราคา</div>
-      <div class="skill-desc">คำนวณราคางานพิมพ์ครบทุกรายการ พร้อม VAT 7% และราคาต่อชิ้น</div>
-      <div class="skill-example">/quote โบรชัวร์ A5 4สี Lam 2500 ชิ้น</div>
-    </div>
-    <div class="skill-card">
-      <div class="skill-icon" style="background:rgba(88,166,255,0.15)">📊</div>
-      <div class="skill-cmd">/cost</div>
-      <div class="skill-title">วิเคราะห์ต้นทุน</div>
-      <div class="skill-desc">Full breakdown: วัตถุดิบ / แรงงาน / Setup / Overhead พร้อม Gross Margin % และ Break-even</div>
-      <div class="skill-example">/cost นามบัตร Art Card 4สี 1000 ชิ้น</div>
-    </div>
-    <div class="skill-card">
-      <div class="skill-icon" style="background:rgba(63,185,80,0.15)">🔍</div>
-      <div class="skill-cmd">/spec</div>
-      <div class="skill-title">ตรวจ Spec ไฟล์</div>
-      <div class="skill-desc">ตรวจสอบ 8 รายการ: DPI, CMYK, Bleed, Trim Marks, Format, Fonts, Ink Coverage, Rich Black</div>
-      <div class="skill-example">/spec RGB 72dpi ไม่มี bleed</div>
-    </div>
-    <div class="skill-card">
-      <div class="skill-icon" style="background:rgba(188,140,255,0.15)">⚖️</div>
-      <div class="skill-cmd">/compare</div>
-      <div class="skill-title">เปรียบเทียบ</div>
-      <div class="skill-desc">Offset vs Gravure, จำนวนต่างกัน, กระดาษ, finishing พร้อม breakeven formula</div>
-      <div class="skill-example">/compare 500 vs 1k vs 5k ชิ้น</div>
+    <div class="skills-grid">
+      <div class="skill-card" style="--card-color: #f59e0b">
+        <div class="skill-icon" style="background:rgba(245,158,11,0.12); font-size:22px">💰</div>
+        <div class="skill-slash">/quote</div>
+        <div class="skill-name">ใบเสนอราคา</div>
+        <div class="skill-desc">คำนวณราคางานพิมพ์ครบทุกรายการ กระดาษ · พิมพ์ · Setup · Finishing · ขนส่ง พร้อม VAT 7% และราคาต่อชิ้น</div>
+        <div class="skill-example">/quote โบรชัวร์ A5 4สี Lam Matt 2,500 ชิ้น</div>
+      </div>
+      <div class="skill-card" style="--card-color: #3b82f6">
+        <div class="skill-icon" style="background:rgba(59,130,246,0.12); font-size:22px">📊</div>
+        <div class="skill-slash">/cost</div>
+        <div class="skill-name">วิเคราะห์ต้นทุน</div>
+        <div class="skill-desc">Full cost breakdown แยก A=วัตถุดิบ B=แรงงาน C=Setup D=Overhead พร้อม Gross Margin % และ Break-even quantity</div>
+        <div class="skill-example">/cost นามบัตร Art Card 4สี 1,000 ชิ้น</div>
+      </div>
+      <div class="skill-card" style="--card-color: #10b981">
+        <div class="skill-icon" style="background:rgba(16,185,129,0.12); font-size:22px">🔍</div>
+        <div class="skill-slash">/spec</div>
+        <div class="skill-name">ตรวจ Spec ไฟล์</div>
+        <div class="skill-desc">Checklist 8 รายการ: DPI · CMYK · Bleed · Crop Marks · Format · Fonts · Ink Coverage · Rich Black พร้อมวิธีแก้</div>
+        <div class="skill-example">/spec RGB 72dpi ไม่มี bleed fonts ไม่ embed</div>
+      </div>
+      <div class="skill-card" style="--card-color: #8b5cf6">
+        <div class="skill-icon" style="background:rgba(139,92,246,0.12); font-size:22px">⚖️</div>
+        <div class="skill-slash">/compare</div>
+        <div class="skill-name">เปรียบเทียบ</div>
+        <div class="skill-desc">Offset vs Gravure · Quantity tiers · กระดาษ · Finishing พร้อม breakeven formula และคำแนะนำ</div>
+        <div class="skill-example">/compare offset vs gravure 4สี 20,000 ชิ้น</div>
+      </div>
     </div>
   </div>
 </section>
@@ -340,65 +505,66 @@
 
 <!-- Pricing -->
 <section id="pricing">
-  <p class="section-label">Pricing Engine</p>
-  <h2>ตัวแปรราคาในระบบ</h2>
-  <p class="section-desc">ข้อมูลราคาที่ฝังอยู่ใน Agent — ปรับแก้ได้ใน <code style="color:var(--orange)">agents/print-specialist.md</code></p>
+  <div class="container">
+    <div class="section-eyebrow">Pricing Engine</div>
+    <h2>ตัวแปรราคาในระบบ</h2>
+    <p class="section-sub">ข้อมูลราคาฝังอยู่ใน Agent — แก้ไขได้ที่ <code style="color:var(--p3); font-family:monospace">agents/print-specialist.md</code></p>
 
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>รายการ</th>
-          <th>รายละเอียด</th>
-          <th>ราคา (THB)</th>
-          <th>ประเภท</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>Art Card 210–350gsm</td><td>กระดาษอาร์ตการ์ด</td><td>72 ฿/กก.</td><td><span class="tag tag-orange">วัตถุดิบ</span></td></tr>
-        <tr><td>Art Card 115–150gsm</td><td>กระดาษอาร์ตแม็ต</td><td>62 ฿/กก.</td><td><span class="tag tag-orange">วัตถุดิบ</span></td></tr>
-        <tr><td>Bond Paper</td><td>กระดาษถ่ายเอกสาร</td><td>52 ฿/กก.</td><td><span class="tag tag-orange">วัตถุดิบ</span></td></tr>
-        <tr><td>Craft Paper</td><td>กระดาษคราฟท์</td><td>47 ฿/กก.</td><td><span class="tag tag-orange">วัตถุดิบ</span></td></tr>
-        <tr><td>พิมพ์ 1 สี</td><td>ต่อ 500 แผ่น/ริม</td><td>200 ฿/ริม</td><td><span class="tag tag-blue">ค่าพิมพ์</span></td></tr>
-        <tr><td>พิมพ์ 2 สี</td><td>ต่อ 500 แผ่น/ริม</td><td>350 ฿/ริม</td><td><span class="tag tag-blue">ค่าพิมพ์</span></td></tr>
-        <tr><td>พิมพ์ 4 สี CMYK</td><td>ต่อ 500 แผ่น/ริม</td><td>650 ฿/ริม</td><td><span class="tag tag-blue">ค่าพิมพ์</span></td></tr>
-        <tr><td>Offset Plate</td><td>ต่อสี ต่อด้าน</td><td>450 ฿/สี</td><td><span class="tag tag-purple">Setup</span></td></tr>
-        <tr><td>Gravure Cylinder</td><td>ต่อสี</td><td>15,000 ฿/สี</td><td><span class="tag tag-purple">Setup</span></td></tr>
-        <tr><td>UV Coating</td><td>Spot/Full UV</td><td>0.45–0.75 ฿/ชิ้น</td><td><span class="tag tag-green">Finishing</span></td></tr>
-        <tr><td>Laminate Matt/Gloss</td><td>เคลือบทั้งหน้า</td><td>0.60 ฿/ชิ้น</td><td><span class="tag tag-green">Finishing</span></td></tr>
-        <tr><td>Die-cut</td><td>ตัดตามแบบ</td><td>1,500 ฿ tooling + 0.35/ชิ้น</td><td><span class="tag tag-green">Finishing</span></td></tr>
-        <tr><td>Overhead</td><td>ค่าใช้จ่ายโรงงาน</td><td>18% ของ (วัตถุดิบ+แรงงาน)</td><td><span class="tag tag-orange">ต้นทุน</span></td></tr>
-        <tr><td>Margin</td><td>กำไรมาตรฐาน</td><td>30% (เร่งด่วน 45%)</td><td><span class="tag tag-orange">ต้นทุน</span></td></tr>
-      </tbody>
-    </table>
-  </div>
+    <div class="pricing-grid">
+      <div class="price-group">
+        <div class="price-group-header">📄 กระดาษ</div>
+        <div class="price-row"><span class="price-item">Art Card 210–350gsm</span><span class="price-val">72 ฿/กก.</span></div>
+        <div class="price-row"><span class="price-item">Art Card 115–150gsm</span><span class="price-val">62 ฿/กก.</span></div>
+        <div class="price-row"><span class="price-item">Bond Paper</span><span class="price-val">52 ฿/กก.</span></div>
+        <div class="price-row"><span class="price-item">Craft Paper</span><span class="price-val">47 ฿/กก.</span></div>
+      </div>
+      <div class="price-group">
+        <div class="price-group-header">🎨 ค่าพิมพ์ (ต่อ 500 แผ่น)</div>
+        <div class="price-row"><span class="price-item">พิมพ์ 1 สี</span><span class="price-val">200 ฿/ริม</span></div>
+        <div class="price-row"><span class="price-item">พิมพ์ 2 สี</span><span class="price-val">350 ฿/ริม</span></div>
+        <div class="price-row"><span class="price-item">พิมพ์ 4 สี CMYK</span><span class="price-val">650 ฿/ริม</span></div>
+      </div>
+      <div class="price-group">
+        <div class="price-group-header">⚙️ Setup / แม่พิมพ์</div>
+        <div class="price-row"><span class="price-item">Offset Plate</span><span class="price-val">450 ฿/สี/ด้าน</span></div>
+        <div class="price-row"><span class="price-item">Gravure Cylinder</span><span class="price-val">15,000 ฿/สี</span></div>
+        <div class="price-row"><span class="price-item">Prepress</span><span class="price-val">800 ฿/งาน</span></div>
+      </div>
+      <div class="price-group">
+        <div class="price-group-header">✨ Finishing</div>
+        <div class="price-row"><span class="price-item">UV Coating</span><span class="price-val">0.45–0.75 ฿/ชิ้น</span></div>
+        <div class="price-row"><span class="price-item">Laminate Matt/Gloss</span><span class="price-val">0.60 ฿/ชิ้น</span></div>
+        <div class="price-row"><span class="price-item">Die-cut</span><span class="price-val">1,500 ฿ + 0.35/ชิ้น</span></div>
+      </div>
+    </div>
 
-  <h3 style="margin-top:40px; margin-bottom:16px; font-size:1rem; color:var(--muted)">TIERED QUANTITY DISCOUNT</h3>
-  <div class="tiers">
-    <div class="tier">
-      <div class="tier-qty">500 ชิ้น</div>
-      <div class="tier-label">ราคาเต็ม</div>
-      <div class="tier-mult" style="color:var(--red)">×1.00</div>
-    </div>
-    <div class="tier">
-      <div class="tier-qty">1,000 ชิ้น</div>
-      <div class="tier-label">ประหยัด 15%</div>
-      <div class="tier-mult" style="color:var(--yellow)">×0.85</div>
-    </div>
-    <div class="tier">
-      <div class="tier-qty">2,500 ชิ้น</div>
-      <div class="tier-label">ประหยัด 28%</div>
-      <div class="tier-mult" style="color:var(--orange)">×0.72</div>
-    </div>
-    <div class="tier">
-      <div class="tier-qty">5,000 ชิ้น</div>
-      <div class="tier-label">ประหยัด 38%</div>
-      <div class="tier-mult" style="color:var(--green)">×0.62</div>
-    </div>
-    <div class="tier">
-      <div class="tier-qty">10,000+ ชิ้น</div>
-      <div class="tier-label">ประหยัด 48%</div>
-      <div class="tier-mult" style="color:var(--blue)">×0.52</div>
+    <div class="section-eyebrow" style="margin-top:48px; margin-bottom:12px">Tiered Discount</div>
+    <div class="tiers-row">
+      <div class="tier-cell">
+        <div class="tier-qty">500 ชิ้น</div>
+        <div class="tier-save">ราคาเต็ม</div>
+        <div class="tier-mult" style="color:#f87171">×1.00</div>
+      </div>
+      <div class="tier-cell">
+        <div class="tier-qty">1,000 ชิ้น</div>
+        <div class="tier-save">-15%</div>
+        <div class="tier-mult" style="color:#fb923c">×0.85</div>
+      </div>
+      <div class="tier-cell">
+        <div class="tier-qty">2,500 ชิ้น</div>
+        <div class="tier-save">-28%</div>
+        <div class="tier-mult" style="color:#fbbf24">×0.72</div>
+      </div>
+      <div class="tier-cell">
+        <div class="tier-qty">5,000 ชิ้น</div>
+        <div class="tier-save">-38%</div>
+        <div class="tier-mult" style="color:#34d399">×0.62</div>
+      </div>
+      <div class="tier-cell">
+        <div class="tier-qty">10,000+</div>
+        <div class="tier-save">-48%</div>
+        <div class="tier-mult" style="color:#60a5fa">×0.52</div>
+      </div>
     </div>
   </div>
 </section>
@@ -407,16 +573,23 @@
 
 <!-- Install -->
 <section id="install">
-  <p class="section-label">Installation</p>
-  <h2>ติดตั้ง Plugin</h2>
-  <p class="section-desc">เพิ่มไม่กี่บรรทัดใน <code style="color:var(--orange)">.claude/settings.json</code> ของโปรเจคคุณ</p>
+  <div class="container">
+    <div class="section-eyebrow">Installation</div>
+    <h2>ติดตั้งใน 3 ขั้นตอน</h2>
+    <p class="section-sub">เพิ่ม config ไม่กี่บรรทัด แล้ว restart Claude Code</p>
 
-  <div class="install-box">
-    <div class="install-step">
-      <div class="step-num">1</div>
-      <div class="step-body">
-        <h4>เพิ่ม Marketplace ใน settings.json</h4>
-        <div class="code-inline"><pre>{
+    <div class="install-wrapper">
+      <div class="install-header">
+        <h3>🔌 เพิ่ม plugin ใน settings.json</h3>
+        <span style="font-size:0.78rem; color:var(--muted)">.claude/settings.json</span>
+      </div>
+      <div class="install-body">
+        <div class="step-row">
+          <div class="step-badge">1</div>
+          <div class="step-content">
+            <h4>เพิ่ม marketplace + enable plugin</h4>
+            <p>เปิด <code style="color:var(--p3)">.claude/settings.json</code> ในโปรเจคของคุณ แล้วเพิ่ม:</p>
+            <div class="code-block"><pre>{
   "extraKnownMarketplaces": {
     "superboom-marketplace": {
       "source": {
@@ -429,22 +602,24 @@
     "superboom@superboom-marketplace": true
   }
 }</pre></div>
-      </div>
-    </div>
+          </div>
+        </div>
 
-    <div class="install-step">
-      <div class="step-num">2</div>
-      <div class="step-body">
-        <h4>Restart Claude Code</h4>
-        <div style="color:var(--muted); font-size:0.875rem;">ปิดและเปิด Claude Code ใหม่ เพื่อให้ plugin โหลด</div>
-      </div>
-    </div>
+        <div class="step-row">
+          <div class="step-badge">2</div>
+          <div class="step-content">
+            <h4>Restart Claude Code</h4>
+            <p style="color:var(--muted)">ปิดและเปิด Claude Code ใหม่ เพื่อให้ plugin โหลดจาก GitHub</p>
+          </div>
+        </div>
 
-    <div class="install-step">
-      <div class="step-num">3</div>
-      <div class="step-body">
-        <h4>ทดสอบ</h4>
-        <div class="code-inline">/quote นามบัตร Art Card 350gsm 4สี UV 1000 ชิ้น</div>
+        <div class="step-row">
+          <div class="step-badge">3</div>
+          <div class="step-content">
+            <h4>ทดสอบ skill แรก</h4>
+            <div class="code-block">/quote นามบัตร Art Card 350gsm 4สี UV 1,000 ชิ้น</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -453,65 +628,63 @@
 <hr class="divider">
 
 <!-- AI News -->
-<section id="ai-news">
-  <p class="section-label">AI News</p>
-  <h2>ข่าว AI &amp; Claude ล่าสุด</h2>
-  <p class="section-desc">สรุปพัฒนาการสำคัญของ AI ที่เกี่ยวข้องกับงานพิมพ์และธุรกิจ ณ มิถุนายน 2026</p>
+<section id="news">
+  <div class="container">
+    <div class="section-eyebrow">AI News</div>
+    <h2>ข่าว AI &amp; Claude</h2>
+    <p class="section-sub">พัฒนาการสำคัญที่เกี่ยวข้องกับงานพิมพ์และธุรกิจ SME ไทย</p>
 
-  <div class="ai-grid">
-    <div class="ai-card">
-      <div class="date">มิถุนายน 2026</div>
-      <h4>🤖 Claude Sonnet 4.6 — Model ที่ขับเคลื่อน superboom</h4>
-      <p>superboom ใช้ <strong>claude-sonnet-4-6</strong> เป็น backbone — รองรับ function calling, multi-step reasoning และ Thai NLP ได้แม่นยำ เหมาะกับการคำนวณราคาที่ต้องอาศัย context ยาว</p>
-      <div class="source">Anthropic · claude-sonnet-4-6</div>
-    </div>
-    <div class="ai-card">
-      <div class="date">2026</div>
-      <h4>🛠️ Claude Code SDK — สร้าง Plugin ได้ง่ายขึ้น</h4>
-      <p>Claude Code Agent SDK ช่วยให้นักพัฒนาสร้าง plugin ด้วย Markdown + YAML frontmatter ไม่ต้องเขียน code ยาว superboom ใช้โครงสร้างนี้ในการสร้าง 4 skills</p>
-      <div class="source">Anthropic Claude Code</div>
-    </div>
-    <div class="ai-card">
-      <div class="date">2025–2026</div>
-      <h4>📊 AI ในงานพิมพ์ (Print Industry)</h4>
-      <p>กลุ่มอุตสาหกรรมพิมพ์เริ่มนำ AI มาช่วย: คำนวณต้นทุน, ตรวจสอบ prepress ไฟล์อัตโนมัติ, พยากรณ์ demand กระดาษ superboom เป็นหนึ่งในตัวอย่างการนำ LLM มาใช้จริงในธุรกิจ SME ไทย</p>
-      <div class="source">AI in Print Industry</div>
-    </div>
-    <div class="ai-card">
-      <div class="date">2025–2026</div>
-      <h4>🇹🇭 AI Policy ไทย — PDPA &amp; AI Act</h4>
-      <p>ประเทศไทยอยู่ระหว่างพัฒนากฎหมาย AI กำกับดูแลข้อมูล (PDPA) ส่งผลให้ธุรกิจ SME ต้องระมัดระวังการใช้ AI กับข้อมูลลูกค้า superboom ประมวลผลทั้งหมดในเครื่องผ่าน Claude Code</p>
-      <div class="source">Thai AI Policy · ASEAN Digital</div>
-    </div>
-    <div class="ai-card">
-      <div class="date">2025–2026</div>
-      <h4>📈 LLM in Finance &amp; Trading</h4>
-      <p>LLMs ถูกนำมาช่วยวิเคราะห์ต้นทุนและ margin ในธุรกิจมากขึ้น รวมถึงการ forecast ราคาวัตถุดิบ (กระดาษ, หมึก) ซึ่งตรงกับ use case ของ /cost และ /compare ใน superboom</p>
-      <div class="source">AI Finance Applications</div>
-    </div>
-    <div class="ai-card">
-      <div class="date">2026</div>
-      <h4>🔓 Open Source AI Tools</h4>
-      <p>Ecosystem รอบ Claude Code เติบโตเร็ว — plugin marketplace เปิดให้ community สร้างและแชร์ tools ได้ผ่าน GitHub superboom เป็น open-source plugin ภายใต้ MIT License</p>
-      <div class="source">Claude Code Marketplace</div>
+    <div class="news-grid">
+      <div class="news-card">
+        <div class="news-chip chip-purple">Claude Code</div>
+        <h4>Claude Sonnet 4.6 ขับเคลื่อน superboom</h4>
+        <p>superboom ใช้ claude-sonnet-4-6 เป็น backbone รองรับ Thai NLP และ multi-step reasoning สำหรับการคำนวณต้นทุนที่ต้องใช้ context ยาว</p>
+      </div>
+      <div class="news-card">
+        <div class="news-chip chip-blue">Agent SDK</div>
+        <h4>Claude Code Plugin System เปิดให้ Community</h4>
+        <p>Claude Code Agent SDK ช่วยให้สร้าง plugin ด้วย Markdown + YAML frontmatter ได้ทันที superboom เป็นตัวอย่างการนำ LLM มาใช้ใน SME</p>
+      </div>
+      <div class="news-card">
+        <div class="news-chip chip-green">Print Industry</div>
+        <h4>AI ในอุตสาหกรรมพิมพ์ไทย</h4>
+        <p>โรงพิมพ์ไทยเริ่มนำ AI มาช่วยคำนวณต้นทุน ตรวจ prepress อัตโนมัติ และพยากรณ์ demand วัตถุดิบ เพิ่มประสิทธิภาพ workflow</p>
+      </div>
+      <div class="news-card">
+        <div class="news-chip chip-orange">Thailand Policy</div>
+        <h4>AI &amp; PDPA ไทย 2026</h4>
+        <p>ไทยพัฒนากฎหมายกำกับดูแล AI ส่งผลให้ธุรกิจ SME ต้องระมัดระวังการใช้ AI กับข้อมูลลูกค้า superboom ประมวลผลในเครื่องผ่าน Claude Code</p>
+      </div>
+      <div class="news-card">
+        <div class="news-chip chip-pink">Finance</div>
+        <h4>LLM สำหรับวิเคราะห์ต้นทุนธุรกิจ</h4>
+        <p>LLMs ถูกนำมาช่วยวิเคราะห์ margin และ forecast ราคาวัตถุดิบ ตรงกับ use case ของ /cost และ /compare ใน superboom</p>
+      </div>
+      <div class="news-card">
+        <div class="news-chip chip-purple">Open Source</div>
+        <h4>Plugin Marketplace Ecosystem เติบโต</h4>
+        <p>Community สร้างและแชร์ Claude Code plugins ผ่าน GitHub มากขึ้น superboom เป็น open-source plugin ภายใต้ MIT License</p>
+      </div>
     </div>
   </div>
 </section>
 
-<hr class="divider">
-
 <!-- Footer -->
 <footer>
-  <p style="margin-bottom:8px">
-    <strong>superboom</strong> — Claude Code Plugin สำหรับโรงพิมพ์ไทย
-  </p>
-  <p style="margin-bottom:16px">
-    <a href="https://github.com/phiistphisit-glitch/superboom">GitHub</a> ·
-    MIT License · Built with Claude Code (claude-sonnet-4-6)
-  </p>
-  <p style="font-size:0.75rem; color:#444">
-    ราคาในระบบเป็นราคาประมาณการ — ปรับตาราง <code>agents/print-specialist.md</code> ให้ตรงต้นทุนจริงของโรงพิมพ์คุณ
-  </p>
+  <div class="container">
+    <div class="footer-logo">
+      <div class="logo-mark">🖨️</div>
+      <span style="font-weight:700">superboom</span>
+    </div>
+    <p class="footer-text">Claude Code Plugin สำหรับโรงพิมพ์ไทย · MIT License · Built with claude-sonnet-4-6</p>
+    <div class="footer-links">
+      <a href="https://github.com/phiistphisit-glitch/superboom">GitHub</a>
+      <a href="#skills">Skills</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#install">Install</a>
+    </div>
+    <p style="margin-top:20px; font-size:0.72rem; color:rgba(255,255,255,0.2)">ราคาในระบบเป็นราคาประมาณการ — ปรับตาราง agents/print-specialist.md ให้ตรงต้นทุนจริง</p>
+  </div>
 </footer>
 
 </body>
