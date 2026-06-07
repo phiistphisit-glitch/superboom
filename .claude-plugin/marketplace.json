@@ -1,0 +1,17 @@
+{
+  "plugins": [
+    {
+      "name": "superboom",
+      "description": "Thai printing shop calculator — quotations, cost analysis, file spec checks, and option comparisons for offset and gravure printing (โรงพิมพ์ superboom)",
+      "version": "1.0.0",
+      "source": {
+        "source": "github",
+        "repo": "phisit/superboom"
+      }
+    }
+  ],
+  "owner": {
+    "name": "phisit",
+    "url": "https://github.com/phisit"
+  }
+}
