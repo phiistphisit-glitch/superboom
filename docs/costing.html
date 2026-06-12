@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Richmax ERP - Costing App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Prompt', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800">
+
+    <aside class="w-64 bg-slate-900 text-white flex flex-col hidden md:flex">
+        <div class="h-16 flex items-center px-6 border-b border-slate-700">
+            <i class="fa-solid fa-cube text-blue-400 text-2xl mr-3"></i>
+            <span class="text-xl font-bold tracking-wider">RICHMAX <span class="text-blue-400">ERP</span></span>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2">
+            <a href="#" class="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition-colors">
+                <i class="fa-solid fa-chart-pie w-6"></i> Dashboard
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-lg shadow-md">
+                <i class="fa-solid fa-file-invoice-dollar w-6"></i> Quotations
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition-colors">
+                <i class="fa-solid fa-clipboard-check w-6"></i> Approvals <span class="ml-auto bg-red-500 text-xs px-2 py-1 rounded-full">3</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg transition-colors">
+                <i class="fa-solid fa-database w-6"></i> Master Data
+            </a>
+        </nav>
+        <div class="p-4 border-t border-slate-700">
+            <div class="flex items-center">
+                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center font-bold">A</div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium">Sale A</p>
+                    <p class="text-xs text-slate-400">Senior Sales</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-y-auto">
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shadow-sm sticky top-0 z-10">
+            <h1 class="text-xl font-semibold text-slate-800">สร้างใบเสนอราคาใหม่ (New Quotation)</h1>
+            <div class="flex items-center space-x-4">
+                <button class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-bell text-xl"></i></button>
+                <button class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    <i class="fa-solid fa-save mr-2"></i> บันทึก Draft
+                </button>
+            </div>
+        </header>
+
+        <div class="p-8 max-w-7xl mx-auto w-full space-y-6">
+
+            <div class="flex justify-between items-end">
+                <div>
+                    <p class="text-sm text-slate-500 mb-1">Quotation No.</p>
+                    <h2 class="text-2xl font-bold text-blue-600">QT-2026-NEW</h2>
+                </div>
+                <span class="bg-yellow-100 text-yellow-800 border border-yellow-200 px-3 py-1 rounded-full text-sm font-medium">
+                    Status: Draft
+                </span>
+            </div>
+
+            <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h3 class="text-lg font-semibold border-b border-slate-100 pb-3 mb-4"><i class="fa-solid fa-user-tag text-blue-500 mr-2"></i> ข้อมูลลูกค้า (Customer Info)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">เลือกลูกค้า</label>
+                        <select class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option>C0004 - Bangkok Snack</option>
+                            <option>C0001 - CPF</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">Customer Grade</label>
+                        <input type="text" value="Grade B" disabled class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">เงื่อนไขเครดิต (Payment Term)</label>
+                        <input type="text" value="45 Days" disabled class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-500">
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h3 class="text-lg font-semibold border-b border-slate-100 pb-3 mb-4"><i class="fa-solid fa-box-open text-blue-500 mr-2"></i> ข้อมูลสินค้า (Product Specs)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-slate-600 mb-1">ประเภทงานพิมพ์</label>
+                        <select class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option>Offset - Offset Folding Box</option>
+                            <option>Gravure - 3 Side Seal Pouch</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">จำนวนสั่งผลิต (Order Qty)</label>
+                        <input type="number" value="50000" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">หน่วย (UOM)</label>
+                        <input type="text" value="PCS" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+            </section>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                        <h3 class="text-lg font-semibold"><i class="fa-solid fa-layer-group text-blue-500 mr-2"></i> ต้นทุนวัตถุดิบ (Materials)</h3>
+                        <button class="text-sm text-blue-600 font-medium hover:text-blue-800"><i class="fa-solid fa-plus"></i> เพิ่มวัตถุดิบ</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs text-slate-500 bg-slate-50 uppercase">
+                                <tr>
+                                    <th class="px-4 py-3 rounded-tl-lg">Item Code</th>
+                                    <th class="px-4 py-3">Qty</th>
+                                    <th class="px-4 py-3">Unit Price</th>
+                                    <th class="px-4 py-3 text-right rounded-tr-lg">Amount (THB)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-slate-100">
+                                    <td class="px-4 py-3 font-medium text-slate-800">CC250 (CCNB)</td>
+                                    <td class="px-4 py-3">1,200 KG</td>
+                                    <td class="px-4 py-3">฿52.00</td>
+                                    <td class="px-4 py-3 text-right">62,400.00</td>
+                                </tr>
+                                <tr class="border-b border-slate-100">
+                                    <td class="px-4 py-3 font-medium text-slate-800">INK-OF-GN</td>
+                                    <td class="px-4 py-3">15.5 KG</td>
+                                    <td class="px-4 py-3">฿260.00</td>
+                                    <td class="px-4 py-3 text-right">4,030.00</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="px-4 py-3 font-semibold text-right">รวมค่าวัตถุดิบ:</td>
+                                    <td class="px-4 py-3 font-bold text-blue-600 text-right">66,430.00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                        <h3 class="text-lg font-semibold"><i class="fa-solid fa-gears text-blue-500 mr-2"></i> ต้นทุนกระบวนการ (Processes)</h3>
+                        <button class="text-sm text-blue-600 font-medium hover:text-blue-800"><i class="fa-solid fa-plus"></i> เพิ่มกระบวนการ</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs text-slate-500 bg-slate-50 uppercase">
+                                <tr>
+                                    <th class="px-4 py-3 rounded-tl-lg">Process / Machine</th>
+                                    <th class="px-4 py-3">Time/Run</th>
+                                    <th class="px-4 py-3 text-right rounded-tr-lg">Amount (THB)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-slate-100">
+                                    <td class="px-4 py-3 font-medium text-slate-800">P004 Plate Making</td>
+                                    <td class="px-4 py-3">4 Colors</td>
+                                    <td class="px-4 py-3 text-right">1,800.00</td>
+                                </tr>
+                                <tr class="border-b border-slate-100">
+                                    <td class="px-4 py-3 font-medium text-slate-800">OF01 Offset Press</td>
+                                    <td class="px-4 py-3">4.5 Hrs</td>
+                                    <td class="px-4 py-3 text-right">5,400.00</td>
+                                </tr>
+                                <tr class="border-b border-slate-100">
+                                    <td class="px-4 py-3 font-medium text-slate-800">P010 Die Cut</td>
+                                    <td class="px-4 py-3">50,000 PCS</td>
+                                    <td class="px-4 py-3 text-right">2,500.00</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" class="px-4 py-3 font-semibold text-right">รวมค่ากระบวนการ:</td>
+                                    <td class="px-4 py-3 font-bold text-blue-600 text-right">9,700.00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </div>
+
+            <section class="bg-slate-800 rounded-xl shadow-lg p-6 text-white">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="space-y-3">
+                        <h4 class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-4">Cost Summary</h4>
+                        <div class="flex justify-between text-sm"><span class="text-slate-300">Total Material Cost</span> <span>฿ 66,430.00</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-slate-300">Total Process Cost</span> <span>฿ 9,700.00</span></div>
+                        <div class="flex justify-between text-lg font-bold border-t border-slate-600 pt-2 mt-2"><span class="text-slate-300">Total Unit Cost</span> <span class="text-blue-400">฿ 1.52 / PCS</span></div>
+                    </div>
+
+                    <div class="space-y-3 border-l border-slate-600 pl-8">
+                        <h4 class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-4">Pricing Setup</h4>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-300">Selling Price / Unit</span>
+                            <input type="text" value="1.85" class="w-24 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-right outline-none focus:border-blue-500">
+                        </div>
+                        <div class="flex justify-between items-center text-sm mt-2">
+                            <span class="text-slate-300">Calculated Margin</span>
+                            <span class="text-red-400 font-bold text-lg">17.8%</span>
+                        </div>
+                        <div class="flex justify-between text-xl font-bold border-t border-slate-600 pt-2 mt-2"><span class="text-slate-300">Total Amount</span> <span class="text-green-400">฿ 92,500.00</span></div>
+                    </div>
+
+                    <div class="border-l border-slate-600 pl-8 flex flex-col justify-between">
+                        <div>
+                            <h4 class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-4">Matrix Check</h4>
+                            <div class="bg-red-500/20 border border-red-500/50 rounded-lg p-3">
+                                <p class="text-xs text-red-300 font-medium"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Triggered Rule: APP002</p>
+                                <p class="text-sm font-semibold mt-1">Margin &lt; 18% (Grade B Min.)</p>
+                                <p class="text-xs text-slate-300 mt-1">Require Approval: General Manager</p>
+                            </div>
+                        </div>
+                        <button class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg mt-4 shadow-lg transition-all">
+                            Send for Approval
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</body>
+</html>
